@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woniuxy.canteen.mapper.OrderMapper">
+    <insert id="add">
+        insert into s_order(dealDate,dealTime,food_id,customer_id) values(#{dealDate},#{dealTime},#{foodId},#{customerId})
+    </insert>
+    <delete id="delete">
+        delete from s_order where id=#{id}
+    </delete>
+    <update id="update">
+        update s_order set
+        <set>
+            <if test="dealDate != null">
+                dealDate=#{dealDate},
+            </if>
+            <if test="dealTime != null">
+                dealTime=#{dealTime},
+            </if>
+            <if test="food != null">
+                food_id=#{food.id},
+            </if>
+            <if test="customer != null">
+                customer_id=#{customer.id},
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+    <select id="getByCondition" resultMap="orderMap">
+        select o.*,f.name fn,f.id fd,c.name cn,c.id cd,c.account,f.style,f.price from s_order o
+        LEFT OUTER JOIN s_food f
+        ON o.food_id=f.id
+        LEFT OUTER JOIN s_customer c
+        ON o.customer_id=c.id
+        <where>
+            <if test="foodStyle != null and foodStyle != ''">
+                and style = #{foodStyle}
+            </if>
+            <if test="customerA != null and customerA != ''">
+                and account = #{customerA}
+            </if>
+            <if test="date1 != null">
+                <![CDATA[
+                    and dealDate >= #{date1}
+                    ]]>
+            </if>
+            <if test="date2 != null">
+                <![CDATA[
+                    and dealDate <= #{date2}
+                    ]]>
+            </if>
+        </where>
+    </select>
+    <resultMap id="orderMap" type="Order">
+        <id property="id" column="id"/>
+        <result property="dealDate" column="dealDate"/>
+        <result property="dealTime" column="dealTime"/>
+        <result property="food.id" column="fd"/>
+        <result property="food.name" column="fn"/>
+        <result property="food.style" column="style"/>
+        <result property="food.price" column="price"/>
+        <result property="customer.id" column="cd"/>
+        <result property="customer.name" column="cn"/>
+        <result property="customer.account" column="account"/>
+    </resultMap>
+</mapper>

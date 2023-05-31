@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/elementui.css"/>
+    <script src="js/vue.js"></script>
+    <script src="js/element.js"></script>
+    <script src="js/axios.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <el-form :inline="true" :model="orderQO" class="demo-form-inline">
+        <el-form-item label="菜系">
+            <el-input v-model="orderQO.foodStyle" placeholder="请输入菜系"></el-input>
+        </el-form-item>
+        <el-form-item label="消费账号">
+            <el-input v-model="orderQO.customerA" placeholder=""></el-input>
+        </el-form-item>
+        <el-form-item label="日期">
+            <el-date-picker
+                    v-model="orderQO.date1"
+                    type="date"
+                    align="center"
+                    value-format="yyyy-MM-dd"
+                    placeholder="选择起始日期">
+            </el-date-picker>
+        </el-form-item>
+        <el-form-item>
+            <el-date-picker
+                    v-model="orderQO.date2"
+                    type="date"
+                    align="center"
+                    value-format="yyyy-MM-dd"
+                    placeholder="选择结束日期">
+            </el-date-picker>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" @click="search">查询</el-button>
+        </el-form-item>
+    </el-form>
+    <el-table :data="orders" style="width: 100%">
+        <el-table-column
+                label="序号"
+                type="index"
+                :index="indexMethod">
+        </el-table-column>
+        <el-table-column
+                label="账号"
+                width="180">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.customer.account }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                label="日期"
+                width="180">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.dealDate }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                label="时间"
+                width="180">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.dealTime }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                label="菜品"
+                width="180">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.food.name }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                label="菜系"
+                width="180">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.food.style }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                label="价格"
+                width="180">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.food.price }}</span>
+            </template>
+        </el-table-column>
+    </el-table>
+
+    <br>
+    <el-pagination
+            background
+            layout="prev, pager, next"
+            @current-change="goPage"
+            :page-count="pageCount">
+    </el-pagination>
+
+</div>
+<script>
+    new Vue({
+        el: "#app",
+        data: {
+            orders: [],
+            pageCount: 0,
+            orderQO: {
+                foodStyle: '',
+                customerA: '',
+                date1: '',
+                date2: ''
+            }
+        },
+        mounted: function () {
+            axios.get("/order/list").then(r => {
+                this.orders = r.data.data.data;
+                this.pageCount = r.data.data.totalPage;
+            })
+        },
+        methods: {
+            goPage(page) {
+                axios.get("/order/list", {
+                    params: {
+                        page
+                    }
+                }).then(response => {
+                    this.orders = response.data.data.data;
+                })
+            },
+            indexMethod(index) {
+                return index + 1;
+            },
+            search() {
+                axios.get("/order/list", {
+                    params: this.orderQO
+                }).then(r => {
+                    if (r.data.code == 200) {
+                        this.orders = r.data.data.data;
+                        this.pageCount = r.data.data.totalPage;
+                    }
+                })
+            },
+        }
+    })
+</script>
+</body>
+</html>

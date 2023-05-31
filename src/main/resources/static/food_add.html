@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/elementui.css"/>
+    <script src="js/vue.js"></script>
+    <script src="js/element.js"></script>
+    <script src="js/axios.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <el-form ref="form" :rules="rules" :model="food" label-width="80px">
+        <el-form-item label="菜名" prop="name">
+            <el-input v-model="food.name"></el-input>
+        </el-form-item>
+        <el-form-item label="价格" prop="price">
+            <el-input
+                    placeholder="请输入菜品价格"
+                    v-model="food.price"
+                    clearable>
+            </el-input>
+        </el-form-item>
+        <el-form-item label="厨师">
+            <el-select v-model="food.staffId" placeholder="请选择厨师">
+                <el-option
+                        v-for="staff in staffs"
+                        :key="staff.id"
+                        :label="staff.name"
+                        :value="staff.id">
+                </el-option>
+            </el-select>
+        </el-form-item>
+        <el-form-item label="菜系" prop="style">
+            <el-input v-model="food.style"></el-input>
+        </el-form-item>
+        <el-form-item label="图片">
+            <el-upload
+                    class="avatar-uploader"
+                    action="/food/upload"
+                    :show-file-list="false"
+                    :on-success="handleAvatarSuccess"
+                    :before-upload="beforeAvatarUpload">
+                <img v-if="food.image" :src="food.image" class="avatar">
+                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+            </el-upload>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" @click="onSubmit">新增菜品</el-button>
+        </el-form-item>
+    </el-form>
+</div>
+<style>
+    .avatar-uploader .el-upload {
+        border: 1px dashed #d9d9d9;
+        border-radius: 6px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .avatar-uploader .el-upload:hover {
+        border-color: #409EFF;
+    }
+
+    .avatar-uploader-icon {
+        font-size: 28px;
+        color: #8c939d;
+        width: 178px;
+        height: 178px;
+        line-height: 178px;
+        text-align: center;
+    }
+
+    .avatar {
+        width: 178px;
+        height: 178px;
+        display: block;
+    }
+</style>
+<script>
+    new Vue({
+        el: "#app",
+        data: {
+            staffs: [],
+            food: {
+                name: '',
+                price: '',
+                staffId: '',
+                style: '',
+                image: '',
+            },
+            rules: {
+                name: [
+                    {required: true, message: '请输入菜名', trigger: 'blur'},
+                    {min: 2, max: 6, message: '菜名长度为 2 到 6 个字符', trigger: 'blur'}
+                ],
+                price: [
+                    {required: true, message: '请输入菜品价格', trigger: 'blur'},
+                    {min: 2, max: 6, message: '菜品价格为 2 到 6 个字符', trigger: 'blur'}
+                ],
+                style: [
+                    {required: true, message: '请添加菜系', trigger: 'blur'},
+                    {min: 2, max: 4, message: '菜系由 2 到 4 个字符组成', trigger: 'blur'}
+                ],
+
+            }
+        },
+        mounted: function () {
+            axios.get("/staff/getChiefs").then(r => {
+                this.staffs = r.data.data;
+            })
+        },
+        methods: {
+            onSubmit() {
+                axios.post("/food/add", this.food).then(r => {
+                    if (r.data.code == 200) {
+                        this.$message({
+                            message: '提交成功.',
+                            type: 'success'
+                        });
+                        location.href = "food_list_s.html"
+                    } else {
+                        this.$message.error('提交失败.');
+                    }
+                })
+            },
+            handleAvatarSuccess(res, file) {
+                this.food.image = res.data;
+            },
+            beforeAvatarUpload(file) {
+                const isJPG = file.type === 'image/jpeg';
+                const isLt2M = file.size / 1024 / 1024 < 2;
+
+                if (!isJPG) {
+                    this.$message.error('上传图片只能是 JPG 格式!');
+                }
+                if (!isLt2M) {
+                    this.$message.error('上传图片大小不能超过 2MB!');
+                }
+                return isJPG && isLt2M;
+            }
+        }
+    })
+</script>
+</body>
+</html>

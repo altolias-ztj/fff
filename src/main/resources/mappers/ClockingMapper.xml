@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woniuxy.canteen.mapper.ClockingMapper">
+    <insert id="add">
+        insert into s_clocking(date,time,status,staff_id) values(#{date},#{time},#{status},#{staffId})
+    </insert>
+    <delete id="delete">
+        delete from s_clocking where id=#{id}
+    </delete>
+    <select id="getByCondition" resultMap="clockingMap">
+        select c.*,s.* from s_clocking c
+        LEFT OUTER JOIN s_staff s
+        ON c.staff_id=s.id
+        <where>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+            <if test="staffId != null">
+                and staff_id = #{staffId}
+            </if>
+            <if test="min != null">
+                <![CDATA[
+                    and date >= #{min}
+                    ]]>
+            </if>
+            <if test="max != null">
+                <![CDATA[
+                    and date <= #{max}
+                    ]]>
+            </if>
+        </where>
+    </select>
+    <resultMap id="clockingMap" type="Clocking">
+        <id property="id" column="id"/>
+        <result property="date" column="date"/>
+        <result property="time" column="time"/>
+        <result property="staff.name" column="name"/>
+        <result property="status" column="status"/>
+        <result property="staff.id" column="staff_id"/>
+    </resultMap>
+</mapper>

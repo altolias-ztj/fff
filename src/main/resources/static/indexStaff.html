@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>雇员管理中心</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="css/pintuer.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <script src="js/vue.js"></script>
+    <script src="js/axios.min.js"></script>
+</head>
+
+<body style="background-color: #f2f9fd;">
+<div class="header bg-main" id="top">
+    <div class="logo margin-big-left fadein-top">
+        <h1>
+            餐厅后台管理系统
+        </h1>
+    </div>
+    <div class="head-l">
+        <a class="button button-little bg-green" href="" target="right"> <span
+                class="icon-home"></span>管理首页
+        </a> &nbsp;&nbsp; <a class="button button-little bg-red" href="">
+        <span class="icon-power-off"></span>退出登录
+    </a>
+        Welcome!
+<!--        <el-form ref="form" :model="form"><el-input v-model="form.name"></el-input></el-form>-->
+    </div>
+</div>
+<div class="leftnav" id="app">
+    <div class="leftnav-title">
+        <strong><span class="icon-list"></span>菜单列表</strong>
+    </div>
+    <div v-for="menu in menus" v-if="menu.pid==null">
+        <h2>
+            <span class="icon-user">{{menu.name}}</span>
+        </h2>
+        <ul v-for="subMenu in menus" v-if="subMenu.pid==menu.id">
+            <li>
+                <a :href="subMenu.link" target="right">
+                    <span class="icon-caret-right">{{subMenu.name}}</span></a>
+            </li>
+        </ul>
+    </div>
+
+</div>
+<div class="admin">
+    <iframe src="welcome.html" name="right" width="100%" height="100%"></iframe>
+</div>
+<script>
+    new Vue({
+        el: "#top",
+        data: {
+            form: {
+                id: '',
+                name: '',
+                gender: '',
+                account: '',
+                password: '',
+                hireDate: '',
+                role: '',
+                salary: ''
+            }
+        },
+        mounted: function () {
+            axios.get("/staff/sl").then(r => {
+                this.form = r.data.data;
+            })
+        }
+    })
+    new Vue({
+        el: "#app",
+        data: {
+            menus: [],
+            staff: {
+                id: '',
+                name: '',
+                gender: '',
+                account: '',
+                password: '',
+                hireDate: '',
+                role: '',
+                salary: ''
+            }
+        },
+        mounted: function () {
+            axios.get("/staff/menus").then(r => {
+                this.menus = r.data.data;
+            })
+            axios.get("/staff/sl").then(r => {
+                this.staff = r.data.data;
+            })
+        }
+    })
+</script>
+</body>
+
+</html>

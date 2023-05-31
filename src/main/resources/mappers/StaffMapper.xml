@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woniuxy.canteen.mapper.StaffMapper">
+    <insert id="add">
+        insert into s_staff(name,gender,account,password,hireDate,role,salary)
+        values(#{name},#{gender},#{account},#{password},#{hireDate},#{role},#{salary})
+    </insert>
+    <delete id="delete">
+        delete from s_staff where id=#{id}
+    </delete>
+    <update id="update">
+        update s_staff
+        <set>
+            <if test="name != null">
+                name=#{name},
+            </if>
+            <if test="gender != null">
+                gender=#{gender},
+            </if>
+            <if test="password != null">
+                password=#{password},
+            </if>
+            <if test="role != null">
+                role=#{role},
+            </if>
+            <if test="salary != null">
+                salary=#{salary},
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+    <select id="getByCondition">
+        select * from s_staff
+        <where>
+            <if test="account != null and account != ''">
+                and account = #{account}
+            </if>
+            <if test="gender != null and gender != ''">
+                and gender = #{gender}
+            </if>
+        </where>
+    </select>
+    <select id="getByAccount">
+        select * from s_staff where account=#{account}
+    </select>
+    <select id="getCountByAccount">
+        select count(*) from s_staff where account=#{account}
+    </select>
+</mapper>

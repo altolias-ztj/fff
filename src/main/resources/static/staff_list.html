@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/elementui.css"/>
+    <script src="js/vue.js"></script>
+    <script src="js/element.js"></script>
+    <script src="js/axios.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <el-table
+            :data="staffs"
+            style="width: 100%">
+        <el-table-column
+                label="序号"
+                type="index"
+                :index="indexMethod">
+        </el-table-column>
+        <el-table-column
+                label="员工名字"
+                width="180">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.name }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                label="性别"
+                width="90">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.gender }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                label="入职时间"
+                width="180">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.hireDate }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column label="职务" width="150">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px" v-if="scope.row.role=='a'">管理员</span>
+                <span style="margin-left: 10px" v-if="scope.row.role=='c'">厨师</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                label="薪水"
+                width="180">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.salary }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column label="操作">
+            <template slot-scope="scope">
+                <el-button
+                        size="mini"
+                        @click="handleEdit(scope.$index, scope.row)">修改
+                </el-button>
+                <el-button
+                        size="mini"
+                        type="danger"
+                        @click="handleDelete(scope.$index, scope.row)">删除
+                </el-button>
+            </template>
+        </el-table-column>
+    </el-table>
+    <br>
+
+    <el-pagination
+            background
+            layout="prev, pager, next"
+            @current-change="goPage"
+            :page-count="pageCount">
+    </el-pagination>
+
+    <el-dialog title="员工信息" :visible.sync="dialogFormVisible">
+        <el-form :model="form">
+            <el-form-item label="姓名" :label-width="formLabelWidth">
+                <el-input v-model="form.name" autocomplete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="性别" :label-width="formLabelWidth">
+                <template>
+                    <el-radio v-model="form.gender" label="男">男</el-radio>
+                    <el-radio v-model="form.gender" label="女">女</el-radio>
+                </template>
+            </el-form-item>
+            <el-form-item label="修改密码" :label-width="formLabelWidth">
+                <el-input placeholder="请输入密码" v-model="form.password" show-password></el-input>
+            </el-form-item>
+            <el-form-item label="职务" :label-width="formLabelWidth">
+                <el-select v-model="form.role" placeholder="选择性别">
+                    <el-option label="管理员" value="a"></el-option>
+                    <el-option label="厨师" value="c"></el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item label="薪资" :label-width="formLabelWidth">
+                <el-input v-model="form.salary" autocomplete="off"></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="dialogFormVisible = false">取 消</el-button>
+            <el-button type="primary" @click="updateStaff">确 定</el-button>
+        </div>
+    </el-dialog>
+</div>
+<script>
+    new Vue({
+        el: "#app",
+        data: {
+            staffs: [],
+            dialogFormVisible: false,
+            form: {
+                name: '',
+                gender: '',
+                password: '',
+                role: '',
+                salary: ''
+            },
+            pageCount: 0,
+            formLabelWidth: '120px'
+        },
+        mounted: function () {
+            axios.get("/staff/list").then(r => {
+                this.staffs = r.data.data.data;
+                this.pageCount = r.data.data.totalPage;
+            })
+        },
+        methods: {
+            goPage(page) {
+                axios.get("/staff/list", {
+                    params: {
+                        page
+                    }
+                }).then(response => {
+                    this.staffs = response.data.data.data;
+                })
+            },
+            indexMethod(index) {
+                return index + 1;
+            },
+            handleEdit(index, row) {
+                this.form = Object.assign({}, row)
+                this.dialogFormVisible = true
+            },
+            updateStaff() {
+                axios.post("/staff/update", this.form).then(r => {
+                    if (r.data.code === 200) {
+                        alert("修改成功")
+                        location.href = "staff_list.html"
+                    } else {
+                        alert("系统异常，请稍候再试")
+                    }
+                })
+            },
+            handleDelete(index, row) {
+                let id = row.id
+                axios.get("/staff/delete", {
+                    params: {
+                        id
+                    }
+                }).then(response => {
+                    if (response.data.code === 200) {
+                        alert("删除成功")
+                        location.href = "staff_list.html"
+                    } else if (response.data.code === -1) {
+                        alert("系统异常，请稍候再试")
+                    }
+                })
+            },
+        }
+    })
+</script>
+</body>
+</html>

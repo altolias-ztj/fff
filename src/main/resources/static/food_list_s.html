@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/elementui.css"/>
+    <script src="js/vue.js"></script>
+    <script src="js/element.js"></script>
+    <script src="js/axios.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <el-table
+            :data="foods"
+            style="width: 100%">
+        <el-table-column
+                label="序号"
+                type="index"
+                :index="indexMethod">
+        </el-table-column>
+        <el-table-column
+                label="菜名"
+                width="180">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.name }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                label="厨师"
+                width="180">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.staff.name }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                label="菜系"
+                width="180">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.style }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                label="价格"
+                width="180">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.price }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                label="图片"
+                width="180">
+            <template slot-scope="scope">
+                <img :src="scope.row.image" width="80px" height="80px">
+            </template>
+        </el-table-column>
+        <el-table-column label="操作">
+            <template slot-scope="scope">
+                <el-button
+                        size="mini"
+                        @click="handleEdit(scope.$index, scope.row)">修改
+                </el-button>
+                <el-button
+                        size="mini"
+                        type="danger"
+                        @click="handleDelete(scope.$index, scope.row)">删除
+                </el-button>
+            </template>
+        </el-table-column>
+    </el-table>
+    <br>
+    <el-pagination
+            background
+            layout="prev, pager, next"
+            @current-change="goPage"
+            :page-count="pageCount">
+    </el-pagination>
+
+    <el-dialog title="菜品信息" :visible.sync="dialogFormVisible">
+        <el-form :model="food">
+            <el-form-item label="菜名" :label-width="formLabelWidth">
+                <el-input v-model="food.name" autocomplete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="价格" :label-width="formLabelWidth">
+                <el-input v-model="food.price" autocomplete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="厨师" :label-width="formLabelWidth">
+                <el-select v-model="food.staffId" placeholder="请选择厨师">
+                    <el-option
+                            v-for="staff in staffs"
+                            :key="staff.id"
+                            :label="staff.name"
+                            :value="staff.id">
+                    </el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item label="菜系" :label-width="formLabelWidth">
+                <el-input v-model="food.style" autocomplete="off"></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="dialogFormVisible = false">取 消</el-button>
+            <el-button type="primary" @click="updateFood">确 定</el-button>
+        </div>
+    </el-dialog>
+</div>
+<script>
+    new Vue({
+        el: "#app",
+        data: {
+            foods: [],
+            staffs: [],
+            pageCount: 0,
+            dialogFormVisible: false,
+            food: {
+                name: '',
+                price: '',
+                staffId: '',
+                style: '',
+            },
+            formLabelWidth: '120px'
+        },
+        mounted: function () {
+            axios.get("/food/list").then(r => {
+                this.foods = r.data.data.data;
+                this.pageCount = r.data.data.totalPage;
+            })
+            axios.get("/staff/getChiefs").then(r => {
+                this.staffs = r.data.data;
+            })
+        },
+        methods: {
+            goPage(page) {
+                axios.get("/food/list", {
+                    params: {
+                        page
+                    }
+                }).then(response => {
+                    this.foods = response.data.data.data;
+                })
+            },
+            indexMethod(index) {
+                return index + 1;
+            },
+            handleEdit(index, row) {
+                this.food = Object.assign({}, row)
+                this.dialogFormVisible = true
+            },
+            updateFood() {
+                axios.post("/food/update", this.food).then(r => {
+                    if (r.data.code === 200) {
+                        alert("修改成功")
+                        location.href = "food_list_s.html"
+                    } else {
+                        alert("系统异常，请稍候再试")
+                    }
+                })
+            },
+            handleDelete(index, row) {
+                let id = row.id
+                axios.get("/food/delete", {
+                    params: {
+                        id
+                    }
+                }).then(response => {
+                    if (response.data.code === 200) {
+                        alert("删除成功")
+                        location.href = "food_list_s.html"
+                    } else if (response.data.code === -1) {
+                        alert("系统异常，请稍候再试")
+                    }
+                })
+            },
+        }
+    })
+</script>
+</body>
+</html>

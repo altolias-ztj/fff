@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/elementui.css"/>
+    <script src="js/vue.js"></script>
+    <script src="js/element.js"></script>
+    <script src="js/axios.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <el-table
+            :data="foods"
+            style="width: 100%">
+        <el-table-column
+                label="序号"
+                type="index"
+                :index="indexMethod">
+        </el-table-column>
+        <el-table-column
+                label="菜名"
+                width="180">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.name }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                label="菜系"
+                width="180">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.style }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                label="价格"
+                width="180">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.price }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                label="图片"
+                width="180">
+            <template slot-scope="scope">
+                <img :src="scope.row.image" width="100px" height="100px">
+            </template>
+        </el-table-column>
+        <el-table-column label="操作">
+            <template slot-scope="scope">
+                <el-button
+                        size="mini"
+                        @click="cancel(scope.$index, scope.row)">取消收藏
+                </el-button>
+            </template>
+        </el-table-column>
+    </el-table>
+    <br>
+    <el-pagination
+            background
+            layout="prev, pager, next"
+            @current-change="goPage"
+            :page-count="pageCount">
+    </el-pagination>
+</div>
+<script>
+    new Vue({
+        el: "#app",
+        data: {
+            foods: [],
+            pageCount: 0,
+        },
+        mounted: function () {
+            axios.get("/food/collectList").then(r => {
+                this.foods = r.data.data.data;
+                this.pageCount = r.data.data.totalPage;
+            })
+        },
+        methods: {
+            goPage(page) {
+                axios.get("/food/collectList", {
+                    params: {
+                        page
+                    }
+                }).then(response => {
+                    this.foods = response.data.data.data;
+                })
+            },
+            indexMethod(index) {
+                return index + 1;
+            },
+            cancel(index, row) {
+                let id = row.id;
+                axios.get("/food/cancelCollect", {
+                    params: {
+                        id
+                    }
+                }).then(response => {
+                    if (response.data.code === 200) {
+                        alert("取消收藏成功")
+                        location.href = "collect_list.html"
+                    } else {
+                        alert("系统繁忙，请稍候再试")
+                    }
+                })
+            },
+        }
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woniuxy.canteen.mapper.FoodMapper">
+    <insert id="add">
+        insert into s_food(name,price,staff_id,style,image) values(#{name},#{price},#{staffId},#{style},#{image})
+    </insert>
+    <update id="update">
+        update s_food
+        <set>
+            <if test="name != null">
+                name=#{name},
+            </if>
+            <if test="price != null">
+                price=#{price},
+            </if>
+            <if test="staffId != null">
+                staff_id=#{staffId},
+            </if>
+            <if test="style != null">
+                style=#{style},
+            </if>
+            <if test="image != null">
+                image=#{image},
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+    <delete id="delete">
+        delete from s_food where id=#{id}
+    </delete>
+    <select id="getByCondition" resultMap="foodMap">
+        select f.*,s.id sd,s.name sn from s_food f
+        LEFT OUTER JOIN s_staff s
+        ON f.staff_id=s.id
+        <where>
+            <if test="style != null and style != ''">
+                and style = #{style}
+            </if>
+            <if test="staffId != null and staffId != ''">
+                and staff_id = #{staffId}
+            </if>
+            <if test="min != null">
+                <![CDATA[
+                    and price >= #{min}
+                    ]]>
+            </if>
+            <if test="max != null">
+                <![CDATA[
+                    and price <= #{max}
+                    ]]>
+            </if>
+        </where>
+    </select>
+    <resultMap id="foodMap" type="Food">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="price" column="price"/>
+        <result property="style" column="style"/>
+        <result property="staff.id" column="sd"/>
+        <result property="staff.name" column="sn"/>
+        <result property="staff.account" column="account"/>
+        <result property="image" column="image"/>
+    </resultMap>
+    <select id="getCollectByCustomerId" resultType="Food">
+        select * from s_collect c,s_food f
+        where f.id=c.food_id
+        and c.customer_id=#{id}
+    </select>
+    <select id="getOrderByCustomerId" resultMap="orderMap">
+        select o.*,f.id fd,f.name,f.price from s_order o
+        LEFT OUTER JOIN s_food f
+        ON o.food_id=f.id
+        WHERE o.customer_id=#{id}
+    </select>
+    <resultMap id="orderMap" type="Order">
+        <id property="id" column="id"/>
+        <result property="dealDate" column="dealDate"/>
+        <result property="dealTime" column="dealTime"/>
+        <result property="food.id" column="fd"/>
+        <result property="food.name" column="name"/>
+        <result property="food.price" column="price"/>
+    </resultMap>
+</mapper>

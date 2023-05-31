@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/elementui.css"/>
+    <script src="js/vue.js"></script>
+    <script src="js/element.js"></script>
+    <script src="js/axios.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <el-form ref="form" :rules="rules" :model="form" label-width="80px">
+        <el-form-item label="员工姓名" prop="name">
+            <el-input v-model="form.name"></el-input>
+        </el-form-item>
+        <el-form-item label="性别" prop="gender">
+            <template>
+                <el-radio v-model="form.gender" label="男">男</el-radio>
+                <el-radio v-model="form.gender" label="女">女</el-radio>
+            </template>
+        </el-form-item>
+        <el-form-item label="员工账户" prop="account">
+            <el-input placeholder="请设置账号" v-model="form.account"></el-input>
+        </el-form-item>
+        <el-form-item label="账户密码" prop="password">
+            <el-input placeholder="请设置密码" v-model="form.password" show-password></el-input>
+        </el-form-item>
+        <el-form-item label="入职日期">
+            <el-date-picker
+                    v-model="form.hireDate"
+                    type="date"
+                    placeholder="选择日期">
+            </el-date-picker>
+        </el-form-item>
+        <el-form-item label="职务" prop="role">
+            <template>
+                <el-radio v-model="form.role" label="a">管理员</el-radio>
+                <el-radio v-model="form.role" label="c">厨师</el-radio>
+            </template>
+        </el-form-item>
+        <el-form-item label="工资" prop="salary">
+            <el-input
+                    placeholder="请输入月薪"
+                    v-model="form.salary"
+                    clearable>
+            </el-input>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" @click="onSubmit">新增员工</el-button>
+        </el-form-item>
+    </el-form>
+</div>
+<script>
+    new Vue({
+        el: "#app",
+        data: {
+            form: {
+                name: '',
+                gender: '',
+                account: '',
+                password: '',
+                hireDate: '',
+                role: '',
+                salary: ''
+            },
+            rules: {
+                name: [
+                    {required: true, message: '请输入姓名', trigger: 'blur'},
+                    {min: 2, max: 8, message: '姓名长度为 2 到 8 个字符', trigger: 'blur'}
+                ],
+                gender: [
+                    {required: true, message: '请选择性别', trigger: 'change'}
+                ],
+                account: [
+                    {required: true, message: '请设置账号', trigger: 'blur'},
+                    {min: 6, max: 12, message: '账号为 6 到 12 个字符组成', trigger: 'blur'}
+                ],
+                password: [
+                    {required: true, message: '请设置密码', trigger: 'blur'},
+                    {min: 6, max: 8, message: '密码由 6 到 8 个字符组成', trigger: 'blur'}
+                ],
+                role: [
+                    {required: true, message: '请选择职务', trigger: 'change'}
+                ],
+                salary: [
+                    {required: true, message: '请输入月薪', trigger: 'blur'},
+                    {min: 4, max: 6, message: '月薪为 4 到 6 个字符', trigger: 'blur'}
+                ],
+            }
+        },
+        methods: {
+            onSubmit() {
+                axios.post("/staff/add", this.form).then(r => {
+                    if (r.data.code == 200) {
+                        this.$message({
+                            message: '提交成功.',
+                            type: 'success'
+                        });
+                        location.href = "staff_list.html"
+                    } else {
+                        this.$message.error('提交失败.');
+                    }
+                })
+
+            }
+        }
+    })
+</script>
+</body>
+</html>

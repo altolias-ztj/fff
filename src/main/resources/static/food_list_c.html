@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/elementui.css"/>
+    <script src="js/vue.js"></script>
+    <script src="js/element.js"></script>
+    <script src="js/axios.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <el-form :inline="true" :model="foodQO" class="demo-form-inline">
+        <el-form-item label="厨师">
+            <el-select v-model="foodQO.staffId"  placeholder="请选择厨师">
+                <el-option
+                        v-for="staff in staffs"
+                        :key="staff.id"
+                        :label="staff.name"
+                        :value="staff.id">
+                </el-option>
+            </el-select>
+        </el-form-item>
+        <el-form-item label="菜系">
+            <el-input v-model="foodQO.style" placeholder="请输入菜系"></el-input>
+        </el-form-item>
+        <el-form-item label="价格">
+            <el-input v-model="foodQO.min" placeholder="请输入最低价格"></el-input>
+        </el-form-item>
+        <el-form-item>
+            <el-input v-model="foodQO.max" placeholder="请输入最高价格"></el-input>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" @click="search">查询</el-button>
+        </el-form-item>
+    </el-form>
+    <el-table
+            :data="foods"
+            style="width: 100%">
+        <el-table-column
+                label="序号"
+                type="index"
+                :index="indexMethod">
+        </el-table-column>
+        <el-table-column
+                label="菜名"
+                width="180">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.name }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                label="厨师"
+                width="180">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.staff.name }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                label="菜系"
+                width="180">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.style }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                label="价格"
+                width="180">
+            <template slot-scope="scope">
+                <span style="margin-left: 10px">{{ scope.row.price }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                label="图片"
+                width="180">
+            <template slot-scope="scope">
+                <img :src="scope.row.image" width="80px" height="80px">
+            </template>
+        </el-table-column>
+        <el-table-column label="操作">
+            <template slot-scope="scope">
+                <el-button
+                        size="mini"
+                        @click="collect(scope.$index, scope.row)">收藏
+                </el-button>
+                <el-button
+                        size="mini"
+                        type="danger"
+                        @click="order(scope.$index, scope.row)">订餐
+                </el-button>
+            </template>
+        </el-table-column>
+    </el-table>
+    <br>
+    <el-pagination
+            background
+            layout="prev, pager, next"
+            @current-change="goPage"
+            :page-count="pageCount">
+    </el-pagination>
+
+</div>
+<script>
+    new Vue({
+        el: "#app",
+        data: {
+            foods: [],
+            staffs:[],
+            pageCount: 0,
+            foodQO:{
+                staffId:'',
+                style:'',
+                min:'',
+                max:''
+            }
+        },
+        mounted: function () {
+            axios.get("/food/list").then(r => {
+                this.foods = r.data.data.data;
+                this.pageCount = r.data.data.totalPage;
+            })
+            axios.get("/staff/getChiefs").then(r => {
+                this.staffs = r.data.data;
+            })
+        },
+        methods: {
+            goPage(page) {
+                axios.get("/food/list", {
+                    params: {
+                        page
+                    }
+                }).then(response => {
+                    this.foods = response.data.data.data;
+                })
+            },
+            search() {
+                axios.get("/food/list", {
+                    params: this.foodQO
+                }).then(r => {
+                    if (r.data.code == 200) {
+                        this.foods = r.data.data.data;
+                        this.pageCount=r.data.data.totalPage;
+                    }
+                })
+            },
+            indexMethod(index) {
+                return index + 1;
+            },
+            collect(index, row) {
+                let id=row.id;
+                axios.get("/food/collect", {
+                    params: {
+                        id
+                    }
+                }).then(response => {
+                    if (response.data.code === 200) {
+                        alert("收藏成功")
+
+                    } else if (response.data.code === -1) {
+                        alert("系统异常，请稍候再试")
+                    }
+                })
+            },
+            order(index, row) {
+                let id = row.id
+                axios.get("/order/add", {
+                    params: {
+                        id
+                    }
+                }).then(response => {
+                    if (response.data.code === 200) {
+                        alert("订餐成功")
+                        location.href = "food_list_s.html"
+                    } else if (response.data.code === -1) {
+                        alert("系统异常，请稍候再试")
+                    }
+                })
+            },
+        }
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woniuxy.canteen.mapper.MenuMapper">
+    <select id="getByStaffId" resultType="Menu">
+        select * from s_menu m,s_staff_menu sm
+        where m.id=sm.menu_id
+        and sm.staff_id=#{id}
+    </select>
+    <select id="getById">
+        select * from s_menu where id=#{id}
+    </select>
+</mapper>
